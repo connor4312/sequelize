@@ -6,15 +6,10 @@ var chai = require('chai')
   , expect = chai.expect
   , assert = chai.assert
   , Support = require(__dirname + '/../support')
-  , DataTypes = require(__dirname + '/../../../lib/data-types')
   , dialect = Support.getTestDialect()
-  , _ = require('lodash')
   , Sequelize = require(__dirname + '/../../../index')
   , config = require(__dirname + '/../../config/config')
-  , moment = require('moment')
-  , Transaction = require(__dirname + '/../../../lib/transaction')
-  , sinon = require('sinon')
-  , current = Support.sequelize;
+  ;
 
 describe(Support.getTestDialectTeaser('Sequelize'), function() {
   if (dialect !== 'postgres') {
@@ -62,7 +57,7 @@ describe(Support.getTestDialectTeaser('Sequelize'), function() {
           }
         );
       });
-    }
+    };
   });
 
   describe('Deferrable', function () {
