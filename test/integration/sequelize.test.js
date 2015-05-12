@@ -643,6 +643,52 @@ describe(Support.getTestDialectTeaser('Sequelize'), function() {
         });
       });
     });
+
+    if (dialect === 'postgres') {
+      describe('deferrables', function () {
+        it('can create foreign keys with deferrable constraints', function () {
+          var userTableName = 'users_' + config.rand();
+          var User = this.sequelize.define(
+            'User', { name: Sequelize.STRING }, { tableName: userTableName }
+          );
+          var Task = this.sequelize.define(
+            'Task', {
+              title: Sequelize.STRING,
+              user_id: {
+                allowNull: false,
+                type: Sequelize.INTEGER,
+                references: userTableName,
+                referencesKey: 'id',
+                referencesDeferrable: Sequelize.DEFERRABLE_INITIALLY_IMMEDIATE
+              }
+            }, {
+              tableName: 'tasks_' + config.rand()
+            }
+          );
+
+          return User.sync({ force: true }).bind(this).then(function () {
+            return Task.sync({ force: true });
+          }).then(function () {
+            return this.sequelize.transaction({
+              deferrable: Sequelize.ALL_DEFERRED
+            });
+          }).then(function (t) {
+            return Task
+              .create({ user_id: -1 }, { transaction: t })
+              .then(function (task) {
+                return [task, User.create({}, { transaction: t })];
+              })
+              .spread(function (task, user) {
+                task.user_id = user.id;
+                return task.save({ transaction: t });
+              });
+          }).catch(function (err) {
+            console.log(err);
+            expect(err).to.not.exist;
+          });
+        });
+      });
+    }
   });
 
   describe('sync', function() {
